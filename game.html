@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Guess Game</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #ff6b81,
+          #f4a261
+        ); /* Gradient màu sắc tươi sáng nhưng không quá chói */
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        font-size: 50px;
+        background: linear-gradient(
+          90deg,
+  #ff3c50, /* Tông đậm hơn của #ff6b81 */
+  #d63a45, /* Tông đậm hơn của #f85a61 */
+  #b55639, /* Tông đậm hơn của #f4a261 */
+  #000000 
+        ); /* Gradient sáng và ấn tượng cho tiêu đề */
+        -webkit-background-clip: text;
+        color: transparent;
+        margin-bottom: 30px;
+        font-weight: 700;
+        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.4); /* Bóng đổ rõ ràng để tiêu đề nổi bật */
+        letter-spacing: 1px;
+        line-height: 1.2;
+      }
+
+      select,
+      button {
+        padding: 15px 25px;
+        font-size: 18px;
+        margin: 15px;
+        border-radius: 8px;
+        border: 2px solid #f85a61;
+        background: linear-gradient(
+           135deg,
+  #ff3c50 20%, /* Tông đậm hơn của #ff6b81 */
+  #b55639 40%, /* Tông đậm hơn của #f4a261 */
+  #2b2b2b 60%, /* Tông gần đen, giúp chuyển đổi mượt mà */
+  #000000 100% 
+        ); /* Gradient nhẹ nhưng nổi bật cho nền */
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      select:focus,
+      button:focus {
+        outline: none;
+        border-color: #ff6b81;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      }
+
+      select:hover,
+      button:hover {
+        background-color: #ff6b81;
+        transform: translateY(-3px);
+      }
+
+      .game-container {
+        width: 70%;
+        max-width: 650px;
+        text-align: center;
+        background: rgba(33, 33, 33, 0.8); /* Nền tối nhưng bán trong suốt */
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+
+      .word-container {
+        font-size: 30px;
+        font-weight: 600;
+        margin: 20px 0;
+        color: #f4a261; /* Màu sáng, ấm áp cho chữ */
+        text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
+      }
+
+      .underline {
+        font-size: 36px;
+        letter-spacing: 3px;
+        display: inline-block;
+        width: 50px;
+        height: 40px;
+        margin: 5px;
+        border-bottom: 2px solid #ff6b81; /* Sử dụng màu gradient chủ đạo */
+        text-align: center;
+        line-height: 40px;
+      }
+
+      .hint {
+        font-style: italic;
+        font-size: 18px;
+        margin-top: 10px;
+        color: #bbb;
+      }
+
+      .word-input {
+        width: 250px;
+        font-size: 24px;
+        padding: 15px;
+        text-align: center;
+        border: 2px solid #444;
+        border-radius: 8px;
+        margin: 10px 0;
+        background-color: #333;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .word-input:focus {
+        border-color: #ff6b81;
+        outline: none;
+        transform: translateY(-3px);
+      }
+
+      .button-container {
+        margin-top: 30px;
+      }
+
+      .timer {
+        font-size: 22px;
+        color: #ff6b81; /* Màu đỏ hồng nổi bật cho đồng hồ */
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .result {
+        font-size: 20px;
+        color: #66bb6a; /* Màu xanh lá cho kết quả đúng */
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      .incorrect {
+        font-size: 20px;
+        color: #ff6b81; /* Màu đỏ cho kết quả sai */
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .game-container {
+          width: 90%;
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 36px;
+        }
+
+        select,
+        button {
+          font-size: 16px;
+          padding: px 20px;
+        }
+
+        .word-input {
+          width: 220px;
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Word Guess Game</h1>
+    <select id="unit">
+      <option value="unit1">Unit 1: Family Life</option>
+      <option value="unit2">Unit 2: Humans and the environment</option>
+      <option value="unit3">Unit 3: Music</option>
+      <option value="unit4">Unit 4: For a Better Community</option>
+      <option value="unit5">Unit 5: Inventions</option>
+      <option value="unit6">Unit 6: Gender Equality</option>
+      <option value="unit7">
+        Unit 7: Vietnam and International Organizations
+      </option>
+      <option value="unit8">Unit 8: New Ways to Learn</option>
+      <option value="unit9">Unit 9: Protecting the Environment</option>
+      <option value="unit10">Unit 10: Ecotourism</option>
+    </select>
+    <button id="startButton">Start Game</button>
+
+    <div class="game-container">
+      <div id="wordContainer" class="word-container"></div>
+      <input
+        type="text"
+        id="wordInput"
+        class="word-input"
+        placeholder="Type here..."
+      />
+      <div id="hintContainer" class="hint"></div>
+      <div id="timerContainer" class="timer"></div>
+      <div id="resultContainer" class="result"></div>
+      <div class="button-container">
+        <button id="nextButton" style="display: none">Next Word</button>
+      </div>
+    </div>
+
+    <script>
+      const vocabulary = {
+        unit1: [
+          { word: "household", meaning: "hộ gia đình" },
+          { word: "responsibility", meaning: "trách nhiệm" },
+          { word: "chore", meaning: "công việc nhà" },
+          { word: "share", meaning: "chia sẻ" },
+          { word: "equal", meaning: "bình đẳng" },
+          { word: "finance", meaning: "tài chính" },
+          { word: "conflict", meaning: "mâu thuẫn" },
+          { word: "workload", meaning: "khối lượng công việc" },
+          { word: "sociable", meaning: "hòa đồng" },
+          { word: "housewife", meaning: "người nội trợ" },
+          { word: "breadwinner", meaning: "trụ cột gia đình" },
+          { word: "nurture", meaning: "nuôi dưỡng" },
+          { word: "domestic", meaning: "trong nhà" },
+          { word: "decision-making", meaning: "quyết định" },
+          { word: "responsible", meaning: "có trách nhiệm" },
+          { word: "dependent", meaning: "phụ thuộc" },
+          { word: "independent", meaning: "độc lập" },
+          { word: "household finances", meaning: "tài chính gia đình" },
+          { word: "gender roles", meaning: "vai trò giới tính" },
+          { word: "parenting", meaning: "việc nuôi dạy con" },
+          { word: "discipline", meaning: "kỷ luật" },
+          { word: "balance", meaning: "cân bằng" },
+          { word: "harmony", meaning: "hài hòa" },
+          { word: "time management", meaning: "quản lý thời gian" },
+          { word: "priority", meaning: "ưu tiên" },
+          { word: "confide", meaning: "tâm sự" },
+          { word: "empathy", meaning: "sự đồng cảm" },
+          { word: "mutual", meaning: "lẫn nhau" },
+          { word: "patience", meaning: "sự kiên nhẫn" },
+          { word: "understanding", meaning: "sự thấu hiểu" },
+          { word: "housework", meaning: "việc nhà" },
+          { word: "decision", meaning: "quyết định" },
+          { word: "participate", meaning: "tham gia" },
+          { word: "budget", meaning: "ngân sách" },
+          { word: "cooperate", meaning: "hợp tác" },
+          { word: "negotiate", meaning: "thương lượng" },
+          { word: "role", meaning: "vai trò" },
+          { word: "agreement", meaning: "thỏa thuận" },
+          { word: "flexible", meaning: "linh hoạt" },
+          { word: "relax", meaning: "thư giãn" },
+          { word: "support", meaning: "hỗ trợ" },
+          { word: "arrangement", meaning: "sự sắp xếp" },
+          { word: "encourage", meaning: "khuyến khích" },
+          { word: "attitude", meaning: "thái độ" },
+          { word: "guidance", meaning: "hướng dẫn" },
+          { word: "family", meaning: "gia đình" },
+          { word: "siblings", meaning: "anh chị em" },
+          { word: "parents", meaning: "bố mẹ" },
+          { word: "children", meaning: "con cái" },
+          { word: "uncles", meaning: "chú, bác" },
+          { word: "aunt", meaning: "cô, dì" },
+          { word: "grandparents", meaning: "ông bà" },
+          { word: "cousins", meaning: "anh chị em họ" },
+          { word: "nieces", meaning: "cháu gái" },
+          { word: "nephews", meaning: "cháu trai" },
+          { word: "husband", meaning: "chồng" },
+          { word: "wife", meaning: "vợ" },
+          { word: "marriage", meaning: "hôn nhân" },
+          { word: "relationship", meaning: "mối quan hệ" },
+          { word: "divorce", meaning: "ly hôn" },
+          { word: "adopted", meaning: "con nuôi" },
+          { word: "stepmother", meaning: "mẹ kế" },
+          { word: "stepfather", meaning: "cha dượng" },
+          { word: "stepbrother", meaning: "em trai cùng cha khác mẹ" },
+          { word: "stepsister", meaning: "em gái cùng cha khác mẹ" },
+          { word: "single parent", meaning: "bố mẹ đơn thân" },
+          { word: "relatives", meaning: "người thân" },
+          { word: "household", meaning: "hộ gia đình" },
+          { word: "family reunion", meaning: "họp mặt gia đình" },
+          { word: "elderly", meaning: "người già" },
+          { word: "parenthood", meaning: "vai trò làm cha mẹ" },
+          { word: "caregiver", meaning: "người chăm sóc" },
+          { word: "foster parents", meaning: "cha mẹ nuôi" },
+          { word: "family tree", meaning: "sơ đồ gia đình" },
+          { word: "parent", meaning: "cha mẹ" },
+          { word: "childhood", meaning: "tuổi thơ" },
+          { word: "family bond", meaning: "mối quan hệ gia đình" },
+          { word: "family support", meaning: "sự hỗ trợ của gia đình" },
+          { word: "blood relative", meaning: "người thân máu mủ" },
+          { word: "family gathering", meaning: "cuộc họp gia đình" },
+          { word: "care", meaning: "chăm sóc" },
+          { word: "nurture", meaning: "nuôi dưỡng" },
+          { word: "protect", meaning: "bảo vệ" },
+          { word: "communication", meaning: "giao tiếp" },
+          { word: "love", meaning: "yêu thương" },
+          { word: "understanding", meaning: "sự hiểu biết" },
+          { word: "family values", meaning: "giá trị gia đình" },
+          { word: "supportive", meaning: "hỗ trợ" },
+          { word: "trust", meaning: "lòng tin" },
+          { word: "care for", meaning: "chăm sóc cho" },
+          { word: "family life", meaning: "cuộc sống gia đình" },
+          { word: "bonding", meaning: "kết nối" },
+          { word: "household chores", meaning: "công việc trong nhà" },
+          { word: "home-cooked", meaning: "nấu ăn tại nhà" },
+          { word: "family dinner", meaning: "bữa tối gia đình" },
+          { word: "shared responsibilities", meaning: "trách nhiệm chung" },
+          { word: "family traditions", meaning: "truyền thống gia đình" },
+          { word: "generational", meaning: "thuộc về các thế hệ" },
+          { word: "parental guidance", meaning: "hướng dẫn của cha mẹ" },
+          { word: "family conflict", meaning: "mâu thuẫn gia đình" },
+          { word: "reconciliation", meaning: "hòa giải" },
+        ],
+        unit2: [
+          { word: "environment", meaning: "môi trường" },
+          { word: "pollution", meaning: "sự ô nhiễm" },
+          { word: "deforestation", meaning: "nạn phá rừng" },
+          { word: "conservation", meaning: "sự bảo tồn" },
+          { word: "biodiversity", meaning: "đa dạng sinh học" },
+          { word: "climate change", meaning: "biến đổi khí hậu" },
+          { word: "natural resources", meaning: "tài nguyên thiên nhiên" },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          { word: "sustainable", meaning: "bền vững" },
+          { word: "ecosystem", meaning: "hệ sinh thái" },
+          { word: "habitat", meaning: "môi trường sống" },
+          { word: "pollutant", meaning: "chất ô nhiễm" },
+          { word: "greenhouse effect", meaning: "hiệu ứng nhà kính" },
+          { word: "carbon footprint", meaning: "dấu chân carbon" },
+          { word: "recycle", meaning: "tái chế" },
+          { word: "waste", meaning: "rác thải" },
+          { word: "deforest", meaning: "phá rừng" },
+          { word: "preserve", meaning: "bảo tồn" },
+          { word: "degrade", meaning: "làm suy thoái" },
+          { word: "landfill", meaning: "bãi rác" },
+          { word: "pollution control", meaning: "kiểm soát ô nhiễm" },
+          { word: "reforestation", meaning: "tái trồng rừng" },
+          { word: "carbon emission", meaning: "khí thải carbon" },
+          { word: "global warming", meaning: "nóng lên toàn cầu" },
+          { word: "conserve", meaning: "bảo tồn" },
+          { word: "ecosystem balance", meaning: "cân bằng hệ sinh thái" },
+          { word: "climate", meaning: "khí hậu" },
+          { word: "weather", meaning: "thời tiết" },
+          { word: "extinction", meaning: "sự tuyệt chủng" },
+          { word: "preservation", meaning: "sự bảo tồn" },
+          { word: "sustainability", meaning: "sự bền vững" },
+          { word: "pollutants", meaning: "chất ô nhiễm" },
+          { word: "green technology", meaning: "công nghệ xanh" },
+          { word: "solar energy", meaning: "năng lượng mặt trời" },
+          { word: "wind power", meaning: "năng lượng gió" },
+          {
+            word: "environmentally friendly",
+            meaning: "thân thiện với môi trường",
+          },
+          { word: "organic", meaning: "hữu cơ" },
+          { word: "ecology", meaning: "hệ sinh thái học" },
+          { word: "environmentalist", meaning: "nhà bảo vệ môi trường" },
+          { word: "greenhouse gas", meaning: "khí nhà kính" },
+          { word: "conservationist", meaning: "người bảo tồn" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "wildlife", meaning: "động vật hoang dã" },
+          { word: "resource depletion", meaning: "sự cạn kiệt tài nguyên" },
+          {
+            word: "environmental degradation",
+            meaning: "sự suy thoái môi trường",
+          },
+          { word: "green belt", meaning: "vành đai xanh" },
+          { word: "overpopulation", meaning: "quá tải dân số" },
+          { word: "pollution", meaning: "ô nhiễm" },
+          { word: "sustainability", meaning: "bền vững" },
+          { word: "climate change", meaning: "biến đổi khí hậu" },
+          { word: "ecosystem", meaning: "hệ sinh thái" },
+          { word: "biodiversity", meaning: "đa dạng sinh học" },
+          { word: "global warming", meaning: "hiệu ứng nhà kính" },
+          { word: "deforestation", meaning: "phá rừng" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          { word: "carbon footprint", meaning: "dấu chân carbon" },
+          { word: "waste management", meaning: "quản lý chất thải" },
+          { word: "conservation", meaning: "bảo tồn" },
+          { word: "overpopulation", meaning: "dân số quá đông" },
+          { word: "fossil fuels", meaning: "nhiên liệu hóa thạch" },
+          { word: "natural resources", meaning: "tài nguyên thiên nhiên" },
+          { word: "pollutants", meaning: "chất ô nhiễm" },
+          { word: "greenhouse gases", meaning: "khí nhà kính" },
+          { word: "habitat destruction", meaning: "phá hủy môi trường sống" },
+          { word: "climate crisis", meaning: "khủng hoảng khí hậu" },
+          { word: "environmental impact", meaning: "tác động môi trường" },
+          { word: "clean energy", meaning: "năng lượng sạch" },
+          { word: "water conservation", meaning: "bảo tồn nước" },
+          { word: "carbon emissions", meaning: "khí thải carbon" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "green energy", meaning: "năng lượng xanh" },
+          { word: "ecosystem services", meaning: "dịch vụ hệ sinh thái" },
+          {
+            word: "climate action",
+            meaning: "hành động chống biến đổi khí hậu",
+          },
+          { word: "pollution", meaning: "ô nhiễm" },
+          { word: "climate change", meaning: "biến đổi khí hậu" },
+          { word: "ecosystem", meaning: "hệ sinh thái" },
+          { word: "biodiversity", meaning: "đa dạng sinh học" },
+          { word: "global warming", meaning: "hiệu ứng nhà kính" },
+          { word: "deforestation", meaning: "phá rừng" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          { word: "carbon footprint", meaning: "dấu chân carbon" },
+          { word: "waste management", meaning: "quản lý chất thải" },
+          { word: "conservation", meaning: "bảo tồn" },
+          { word: "overpopulation", meaning: "dân số quá đông" },
+          { word: "fossil fuels", meaning: "nhiên liệu hóa thạch" },
+          { word: "natural resources", meaning: "tài nguyên thiên nhiên" },
+          { word: "pollutants", meaning: "chất ô nhiễm" },
+          { word: "greenhouse gases", meaning: "khí nhà kính" },
+          { word: "habitat destruction", meaning: "phá hủy môi trường sống" },
+          { word: "climate crisis", meaning: "khủng hoảng khí hậu" },
+          { word: "environmental impact", meaning: "tác động môi trường" },
+          { word: "clean energy", meaning: "năng lượng sạch" },
+          { word: "water conservation", meaning: "bảo tồn nước" },
+          { word: "carbon emissions", meaning: "khí thải carbon" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "green energy", meaning: "năng lượng xanh" },
+          { word: "ecosystem services", meaning: "dịch vụ hệ sinh thái" },
+          {
+            word: "climate action",
+            meaning: "hành động chống biến đổi khí hậu",
+          },
+          { word: "pollution control", meaning: "kiểm soát ô nhiễm" },
+          { word: "solar power", meaning: "năng lượng mặt trời" },
+          { word: "wind energy", meaning: "năng lượng gió" },
+          { word: "water pollution", meaning: "ô nhiễm nước" },
+          { word: "air pollution", meaning: "ô nhiễm không khí" },
+          { word: "forest conservation", meaning: "bảo tồn rừng" },
+          { word: "eco-friendly", meaning: "thân thiện với môi trường" },
+          { word: "carbon neutral", meaning: "trung hòa carbon" },
+          { word: "biodegradable", meaning: "có thể phân hủy sinh học" },
+          { word: "environmental protection", meaning: "bảo vệ môi trường" },
+          { word: "greenhouse effect", meaning: "hiệu ứng nhà kính" },
+          { word: "environmental policy", meaning: "chính sách môi trường" },
+          { word: "sustainable farming", meaning: "nông nghiệp bền vững" },
+        ],
+        unit3: [
+          { word: "melody", meaning: "giai điệu" },
+          { word: "composer", meaning: "nhà soạn nhạc" },
+          { word: "lyrics", meaning: "lời bài hát" },
+          { word: "genre", meaning: "thể loại nhạc" },
+          { word: "instrument", meaning: "nhạc cụ" },
+          { word: "orchestra", meaning: "dàn nhạc" },
+          { word: "performance", meaning: "buổi biểu diễn" },
+          { word: "symphony", meaning: "bản giao hưởng" },
+          { word: "concert", meaning: "buổi hòa nhạc" },
+          { word: "vocalist", meaning: "ca sĩ" },
+          { word: "solo", meaning: "đơn ca" },
+          { word: "duet", meaning: "hát song ca" },
+          { word: "album", meaning: "album âm nhạc" },
+          { word: "rhythm", meaning: "nhịp điệu" },
+          { word: "chord", meaning: "hợp âm" },
+          { word: "harmony", meaning: "hòa âm" },
+          { word: "tone", meaning: "âm sắc" },
+          { word: "tempo", meaning: "tốc độ nhịp" },
+          { word: "scale", meaning: "thang âm" },
+          { word: "key", meaning: "chế độ" },
+          { word: "melodic", meaning: "thuộc về giai điệu" },
+          { word: "acoustic", meaning: "âm thanh tự nhiên" },
+          { word: "rhythmic", meaning: "thuộc về nhịp điệu" },
+          { word: "tune", meaning: "giai điệu" },
+          { word: "soundtrack", meaning: "nhạc nền" },
+          { word: "musician", meaning: "nhạc sĩ" },
+          { word: "audience", meaning: "khán giả" },
+          { word: "stage", meaning: "sân khấu" },
+          { word: "rehearsal", meaning: "buổi tập" },
+          { word: "instrumentalist", meaning: "người chơi nhạc cụ" },
+          { word: "conductor", meaning: "nhạc trưởng" },
+          { word: "band", meaning: "ban nhạc" },
+          { word: "tune-up", meaning: "hiệu chỉnh âm" },
+          { word: "harmony", meaning: "sự hòa hợp" },
+          { word: "drums", meaning: "trống" },
+          { word: "guitar", meaning: "đàn guitar" },
+          { word: "piano", meaning: "đàn piano" },
+          { word: "violin", meaning: "đàn vĩ cầm" },
+          { word: "jazz", meaning: "nhạc jazz" },
+          { word: "pop music", meaning: "nhạc pop" },
+          { word: "classical", meaning: "nhạc cổ điển" },
+          { word: "rock music", meaning: "nhạc rock" },
+          { word: "blues", meaning: "nhạc blues" },
+          { word: "folk music", meaning: "nhạc dân ca" },
+          { word: "dance music", meaning: "nhạc dance" },
+          { word: "electronic music", meaning: "nhạc điện tử" },
+          { word: "harmony", meaning: "sự hòa âm" },
+          { word: "symphony", meaning: "dàn nhạc giao hưởng" },
+          { word: "composer", meaning: "nhạc sĩ sáng tác" },
+          { word: "performer", meaning: "người biểu diễn" },
+          { word: "songwriter", meaning: "nhạc sĩ viết lời bài hát" },
+          { word: "track", meaning: "bài hát" },
+          { word: "note", meaning: "nốt nhạc" },
+          { word: "duet", meaning: "bản song ca" },
+          { word: "solo", meaning: "bài hát solo" },
+          { word: "rehearsal", meaning: "buổi tập dượt" },
+          { word: "vocals", meaning: "hát" },
+          { word: "choreography", meaning: "biên đạo múa" },
+          { word: "electric", meaning: "nhạc điện tử" },
+          { word: "reverb", meaning: "hiệu ứng vang" },
+          { word: "acapella", meaning: "hát không nhạc" },
+          { word: "tempo", meaning: "nhịp độ" },
+          { word: "crescendo", meaning: "tăng dần âm lượng" },
+          { word: "decrescendo", meaning: "giảm dần âm lượng" },
+          { word: "refrain", meaning: "điệp khúc" },
+          { word: "bridge", meaning: "phần nối trong bài hát" },
+          { word: "beat", meaning: "nhịp" },
+          { word: "tune", meaning: "giai điệu" },
+          { word: "modulation", meaning: "chuyển âm" },
+          { word: "dynamics", meaning: "biến động âm lượng" },
+          { word: "tonality", meaning: "độ cao của âm thanh" },
+          { word: "sonata", meaning: "bản nhạc sonata" },
+          { word: "composition", meaning: "sự sáng tác" },
+          { word: "arrangement", meaning: "phân chia nhạc cụ" },
+          { word: "improvisation", meaning: "sự ứng biến" },
+          { word: "reprise", meaning: "sự tái hiện" },
+          { word: "counterpoint", meaning: "đối điểm" },
+          { word: "notation", meaning: "ký hiệu nhạc" },
+          { word: "theme", meaning: "chủ đề" },
+          { word: "medley", meaning: "bản phối hợp nhiều bài hát" },
+          { word: "acoustic guitar", meaning: "guitar thùng" },
+          { word: "electric guitar", meaning: "guitar điện" },
+          { word: "keyboard", meaning: "dương cầm điện tử" },
+          { word: "bass", meaning: "guitar bass" },
+          { word: "cello", meaning: "đàn vi-ô-lông" },
+          { word: "trumpet", meaning: "kèn trumpet" },
+          { word: "saxophone", meaning: "kèn sáo" },
+        ],
+        unit4: [
+          { word: "community", meaning: "cộng đồng" },
+          { word: "volunteer", meaning: "tình nguyện viên" },
+          { word: "donate", meaning: "quyên góp" },
+          { word: "neighborhood", meaning: "khu phố" },
+          { word: "helpful", meaning: "hữu ích" },
+          { word: "support", meaning: "hỗ trợ" },
+          { word: "kindness", meaning: "lòng tốt" },
+          { word: "donation", meaning: "sự quyên góp" },
+          { word: "social service", meaning: "dịch vụ xã hội" },
+          { word: "environment", meaning: "môi trường" },
+          { word: "recycle", meaning: "tái chế" },
+          { word: "waste", meaning: "rác thải" },
+          { word: "reforestation", meaning: "tái trồng rừng" },
+          { word: "clean-up", meaning: "dọn dẹp" },
+          { word: "campaign", meaning: "chiến dịch" },
+          { word: "organize", meaning: "tổ chức" },
+          { word: "fundraising", meaning: "gây quỹ" },
+          { word: "awareness", meaning: "sự nhận thức" },
+          { word: "solidarity", meaning: "tinh thần đoàn kết" },
+          { word: "volunteer work", meaning: "công việc tình nguyện" },
+          { word: "sponsor", meaning: "nhà tài trợ" },
+          { word: "poverty", meaning: "nghèo đói" },
+          { word: "homelessness", meaning: "vô gia cư" },
+          { word: "education", meaning: "giáo dục" },
+          { word: "healthcare", meaning: "chăm sóc sức khỏe" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "donor", meaning: "người cho" },
+          { word: "community service", meaning: "dịch vụ cộng đồng" },
+          { word: "sustainable", meaning: "bền vững" },
+          { word: "empathy", meaning: "thấu cảm" },
+          { word: "equality", meaning: "bình đẳng" },
+          { word: "volunteering", meaning: "hoạt động tình nguyện" },
+          { word: "supportive", meaning: "hỗ trợ" },
+          { word: "collect", meaning: "thu thập" },
+          { word: "environmental protection", meaning: "bảo vệ môi trường" },
+          { word: "caring", meaning: "quan tâm" },
+          { word: "outreach", meaning: "sự tiếp cận" },
+          { word: "needy", meaning: "người nghèo" },
+          { word: "help", meaning: "giúp đỡ" },
+          {
+            word: "awareness campaign",
+            meaning: "chiến dịch nâng cao nhận thức",
+          },
+          { word: "empower", meaning: "trao quyền" },
+          { word: "human rights", meaning: "quyền con người" },
+          { word: "community development", meaning: "phát triển cộng đồng" },
+          { word: "environmental awareness", meaning: "nhận thức môi trường" },
+          { word: "civic responsibility", meaning: "trách nhiệm công dân" },
+          { word: "social equality", meaning: "bình đẳng xã hội" },
+          { word: "donate", meaning: "hiến tặng" },
+          { word: "awareness", meaning: "nhận thức" },
+          { word: "social responsibility", meaning: "trách nhiệm xã hội" },
+          { word: "equality", meaning: "bình đẳng" },
+          { word: "inclusion", meaning: "bao gồm" },
+          { word: "diversity", meaning: "sự đa dạng" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "cleanliness", meaning: "sự sạch sẽ" },
+          { word: "hygiene", meaning: "vệ sinh" },
+          { word: "reduction", meaning: "giảm thiểu" },
+          { word: "preservation", meaning: "bảo tồn" },
+          { word: "solidarity", meaning: "sự đoàn kết" },
+          { word: "helpful", meaning: "hữu ích" },
+          { word: "cooperation", meaning: "hợp tác" },
+          { word: "education", meaning: "giáo dục" },
+          { word: "participation", meaning: "sự tham gia" },
+          { word: "advocacy", meaning: "lên tiếng" },
+          { word: "justice", meaning: "công lý" },
+          { word: "peace", meaning: "hòa bình" },
+          { word: "safety", meaning: "an toàn" },
+          { word: "respect", meaning: "sự tôn trọng" },
+          { word: "volunteer", meaning: "tình nguyện viên" },
+          { word: "community", meaning: "cộng đồng" },
+          { word: "charity", meaning: "từ thiện" },
+          { word: "donate", meaning: "hiến tặng" },
+          { word: "sustainability", meaning: "bền vững" },
+          { word: "social responsibility", meaning: "trách nhiệm xã hội" },
+          { word: "equality", meaning: "bình đẳng" },
+          { word: "inclusion", meaning: "bao gồm" },
+          { word: "diversity", meaning: "sự đa dạng" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "cleanliness", meaning: "sự sạch sẽ" },
+          { word: "hygiene", meaning: "vệ sinh" },
+          { word: "reduction", meaning: "giảm thiểu" },
+          { word: "preservation", meaning: "bảo tồn" },
+          { word: "solidarity", meaning: "sự đoàn kết" },
+          { word: "helpful", meaning: "hữu ích" },
+          { word: "cooperation", meaning: "hợp tác" },
+          { word: "empower", meaning: "trao quyền" },
+          { word: "participation", meaning: "sự tham gia" },
+          { word: "justice", meaning: "công lý" },
+          { word: "peace", meaning: "hòa bình" },
+          { word: "safety", meaning: "an toàn" },
+          { word: "respect", meaning: "sự tôn trọng" },
+          { word: "volunteering", meaning: "hoạt động tình nguyện" },
+          { word: "philanthropy", meaning: "từ thiện" },
+          { word: "NGOs", meaning: "Tổ chức phi chính phủ" },
+          { word: "humanitarian", meaning: "nhân đạo" },
+          { word: "donation", meaning: "quyên góp" },
+          { word: "fund", meaning: "quỹ" },
+          { word: "outreach", meaning: "tiếp cận" },
+          { word: "empowerment", meaning: "sự trao quyền" },
+          { word: "reforestation", meaning: "trồng rừng lại" },
+          { word: "waste management", meaning: "quản lý chất thải" },
+          { word: "green energy", meaning: "năng lượng xanh" },
+        ],
+        unit5: [
+          { word: "invention", meaning: "phát minh" },
+          { word: "innovation", meaning: "sự đổi mới" },
+          { word: "device", meaning: "thiết bị" },
+          { word: "technology", meaning: "công nghệ" },
+          { word: "engineer", meaning: "kỹ sư" },
+          { word: "scientist", meaning: "nhà khoa học" },
+          { word: "prototype", meaning: "nguyên mẫu" },
+          { word: "discovery", meaning: "phát hiện" },
+          { word: "patent", meaning: "bằng sáng chế" },
+          { word: "experiment", meaning: "thí nghiệm" },
+          { word: "research", meaning: "nghiên cứu" },
+          { word: "development", meaning: "sự phát triển" },
+          { word: "breakthrough", meaning: "đột phá" },
+          { word: "idea", meaning: "ý tưởng" },
+          { word: "improvement", meaning: "sự cải tiến" },
+          { word: "creation", meaning: "sự sáng tạo" },
+          { word: "mechanism", meaning: "cơ chế" },
+          { word: "automation", meaning: "tự động hóa" },
+          { word: "robot", meaning: "robot" },
+          { word: "artificial intelligence", meaning: "trí tuệ nhân tạo" },
+          { word: "computer", meaning: "máy tính" },
+          { word: "internet", meaning: "mạng internet" },
+          { word: "software", meaning: "phần mềm" },
+          { word: "hardware", meaning: "phần cứng" },
+          { word: "communication", meaning: "giao tiếp" },
+          { word: "network", meaning: "mạng lưới" },
+          { word: "smartphone", meaning: "điện thoại thông minh" },
+          { word: "tablet", meaning: "máy tính bảng" },
+          { word: "electricity", meaning: "điện" },
+          { word: "battery", meaning: "pin" },
+          { word: "solar energy", meaning: "năng lượng mặt trời" },
+          { word: "wind energy", meaning: "năng lượng gió" },
+          { word: "sustainability", meaning: "tính bền vững" },
+          { word: "green technology", meaning: "công nghệ xanh" },
+          { word: "environment", meaning: "môi trường" },
+          { word: "disruptive", meaning: "đột phá" },
+          { word: "virtual reality", meaning: "thực tế ảo" },
+          { word: "augmented reality", meaning: "thực tế tăng cường" },
+          { word: "blockchain", meaning: "chuỗi khối" },
+          { word: "cryptocurrency", meaning: "tiền mã hóa" },
+          { word: "3D printing", meaning: "in 3D" },
+          { word: "machine learning", meaning: "học máy" },
+          { word: "cloud computing", meaning: "điện toán đám mây" },
+          { word: "wearable technology", meaning: "công nghệ đeo được" },
+          { word: "biotechnology", meaning: "công nghệ sinh học" },
+          { word: "genetic engineering", meaning: "kỹ thuật di truyền" },
+          { word: "space exploration", meaning: "khám phá vũ trụ" },
+          { word: "satellite", meaning: "vệ tinh" },
+          { word: "spacecraft", meaning: "tàu vũ trụ" },
+          { word: "invention", meaning: "phát minh" },
+          { word: "innovation", meaning: "đổi mới sáng tạo" },
+          { word: "technology", meaning: "công nghệ" },
+          { word: "scientist", meaning: "nhà khoa học" },
+          { word: "experiment", meaning: "thí nghiệm" },
+          { word: "discovery", meaning: "phát hiện" },
+          { word: "patent", meaning: "bằng sáng chế" },
+          { word: "prototype", meaning: "nguyên mẫu" },
+          { word: "gadget", meaning: "thiết bị" },
+          { word: "automation", meaning: "tự động hóa" },
+          { word: "machine", meaning: "máy móc" },
+          { word: "robot", meaning: "robot" },
+          { word: "electronic", meaning: "điện tử" },
+          { word: "device", meaning: "thiết bị" },
+          { word: "software", meaning: "phần mềm" },
+          { word: "hardware", meaning: "phần cứng" },
+          { word: "inventor", meaning: "người phát minh" },
+          { word: "design", meaning: "thiết kế" },
+          { word: "innovation", meaning: "sự đổi mới" },
+          { word: "disruptive", meaning: "đột phá" },
+          { word: "3D printing", meaning: "in 3D" },
+          { word: "artificial intelligence", meaning: "trí tuệ nhân tạo" },
+          { word: "energy", meaning: "năng lượng" },
+          { word: "biotechnology", meaning: "công nghệ sinh học" },
+          { word: "medicine", meaning: "y học" },
+          { word: "space exploration", meaning: "khám phá vũ trụ" },
+          { word: "cloud computing", meaning: "điện toán đám mây" },
+          { word: "internet", meaning: "mạng internet" },
+          { word: "electricity", meaning: "điện" },
+          { word: "television", meaning: "ti vi" },
+          { word: "telephone", meaning: "điện thoại" },
+          { word: "vaccination", meaning: "vắc xin" },
+          { word: "vaccines", meaning: "vắc xin" },
+          { word: "wind turbine", meaning: "tuabin gió" },
+          { word: "solar panel", meaning: "tấm pin mặt trời" },
+          { word: "engine", meaning: "động cơ" },
+          { word: "microscope", meaning: "kính hiển vi" },
+          { word: "radar", meaning: "ra-đa" },
+          { word: "automobile", meaning: "ô tô" },
+          { word: "flight", meaning: "chuyến bay" },
+          { word: "spacecraft", meaning: "tàu vũ trụ" },
+          { word: "laser", meaning: "laser" },
+          { word: "battery", meaning: "pin" },
+          { word: "chemical reaction", meaning: "phản ứng hóa học" },
+          { word: "genetic engineering", meaning: "kỹ thuật di truyền" },
+          { word: "smartphone", meaning: "smartphone" },
+          { word: "artificial limb", meaning: "chi giả" },
+          { word: "electric car", meaning: "xe ô tô điện" },
+          { word: "nanotechnology", meaning: "công nghệ nano" },
+          { word: "computer", meaning: "máy tính" },
+          { word: "software engineer", meaning: "kỹ sư phần mềm" },
+          { word: "hydroelectric power", meaning: "năng lượng thủy điện" },
+          { word: "fossil fuel", meaning: "nhiên liệu hóa thạch" },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          { word: "3D scanner", meaning: "máy quét 3D" },
+        ],
+        unit6: [
+          { word: "gender equality", meaning: "bình đẳng giới" },
+          { word: "equality", meaning: "sự bình đẳng" },
+          { word: "gender", meaning: "giới tính" },
+          { word: "discrimination", meaning: "phân biệt đối xử" },
+          { word: "gender roles", meaning: "vai trò giới tính" },
+          { word: "stereotypes", meaning: "định kiến" },
+          { word: "women's rights", meaning: "quyền của phụ nữ" },
+          { word: "feminism", meaning: "chủ nghĩa nữ quyền" },
+          { word: "matriarchy", meaning: "chế độ mẫu hệ" },
+          { word: "sexual harassment", meaning: "quấy rối tình dục" },
+          { word: "equal pay", meaning: "lương bình đẳng" },
+          { word: "workplace equality", meaning: "bình đẳng tại nơi làm việc" },
+          { word: "equal opportunities", meaning: "cơ hội bình đẳng" },
+          { word: "access to education", meaning: "quyền tiếp cận giáo dục" },
+          { word: "reproductive rights", meaning: "quyền sinh sản" },
+          { word: "gender parity", meaning: "cân bằng giới tính" },
+          { word: "sexuality", meaning: "tính dục" },
+          { word: "sexual orientation", meaning: "xu hướng tình dục" },
+          { word: "gender identity", meaning: "nhận dạng giới tính" },
+          { word: "LGBTQ+", meaning: "LGBTQ+" },
+          { word: "intersectionality", meaning: "sự giao thoa" },
+          { word: "advocacy", meaning: "sự bảo vệ, vận động" },
+          { word: "rights", meaning: "quyền lợi" },
+          { word: "justice", meaning: "công lý" },
+          { word: "social justice", meaning: "công lý xã hội" },
+          { word: "human rights", meaning: "quyền con người" },
+          { word: "diversity", meaning: "đa dạng" },
+          { word: "inclusivity", meaning: "bao gồm" },
+          { word: "empower", meaning: "trao quyền" },
+          { word: "affirmative action", meaning: "hành động khẳng định" },
+          { word: "equality of opportunity", meaning: "bình đẳng cơ hội" },
+          { word: "bias", meaning: "thành kiến" },
+          { word: "prejudice", meaning: "định kiến" },
+          { word: "social norms", meaning: "quy chuẩn xã hội" },
+          { word: "patriarchal society", meaning: "xã hội phụ hệ" },
+          {
+            word: "gender-based violence",
+            meaning: "bạo lực dựa trên giới tính",
+          },
+          { word: "sexual violence", meaning: "bạo lực tình dục" },
+          { word: "reproductive health", meaning: "sức khỏe sinh sản" },
+          {
+            word: "gender equality movement",
+            meaning: "phong trào bình đẳng giới",
+          },
+          { word: "women empowerment", meaning: "trao quyền cho phụ nữ" },
+          { word: "gender discrimination", meaning: "phân biệt giới tính" },
+          { word: "social inclusion", meaning: "hòa nhập xã hội" },
+          { word: "gender justice", meaning: "công lý giới tính" },
+          {
+            word: "gender-based discrimination",
+            meaning: "phân biệt đối xử dựa trên giới tính",
+          },
+          {
+            word: "gender equality policy",
+            meaning: "chính sách bình đẳng giới",
+          },
+          { word: "gender-sensitive", meaning: "nhạy cảm với giới tính" },
+          { word: "gender equality", meaning: "bình đẳng giới" },
+          { word: "empowerment", meaning: "trao quyền" },
+          { word: "equality", meaning: "sự bình đẳng" },
+          { word: "stereotype", meaning: "hình mẫu" },
+          { word: "patriarchy", meaning: "chế độ phụ quyền" },
+          { word: "matriarchy", meaning: "chế độ mẫu quyền" },
+          { word: "bias", meaning: "thành kiến" },
+          { word: "equal pay", meaning: "tiền lương bình đẳng" },
+          { word: "men's rights", meaning: "quyền nam giới" },
+          { word: "LGBTQ+", meaning: "cộng đồng LGBTQ+" },
+          { word: "reproductive rights", meaning: "quyền sinh sản" },
+          { word: "sexual orientation", meaning: "xu hướng tình dục" },
+          { word: "transgender", meaning: "người chuyển giới" },
+          { word: "equality movement", meaning: "phong trào bình đẳng" },
+          { word: "intersectionality", meaning: "sự giao thoa" },
+          { word: "inclusive", meaning: "bao hàm" },
+          { word: "advocacy", meaning: "vận động" },
+          { word: "social justice", meaning: "công lý xã hội" },
+          { word: "feminist", meaning: "người ủng hộ nữ quyền" },
+          { word: "gender-based violence", meaning: "bạo lực dựa trên giới" },
+          { word: "gender identity", meaning: "nhận dạng giới tính" },
+          { word: "equal opportunity", meaning: "cơ hội bình đẳng" },
+          { word: "glass ceiling", meaning: "trần kính" },
+          { word: "affirmative action", meaning: "hành động khẳng định" },
+          {
+            word: "gender-based discrimination",
+            meaning: "phân biệt đối xử dựa trên giới",
+          },
+          { word: "equal representation", meaning: "đại diện bình đẳng" },
+          { word: "gender equality laws", meaning: "luật bình đẳng giới" },
+          { word: "patriarchal society", meaning: "xã hội phụ quyền" },
+          { word: "gender bias", meaning: "thành kiến giới tính" },
+          { word: "non-binary", meaning: "phi nhị phân" },
+          { word: "gender fluid", meaning: "lỏng lẻo giới tính" },
+          { word: "woman empowerment", meaning: "nâng cao quyền lực phụ nữ" },
+          { word: "gender neutrality", meaning: "trung lập giới tính" },
+          { word: "equality of opportunity", meaning: "cơ hội bình đẳng" },
+          { word: "inclusive language", meaning: "ngôn ngữ bao hàm" },
+          {
+            word: "gender pay gap",
+            meaning: "khoảng cách lương giữa các giới",
+          },
+          { word: "workplace equality", meaning: "bình đẳng nơi làm việc" },
+          { word: "reproductive justice", meaning: "công lý sinh sản" },
+          { word: "feminist theory", meaning: "lý thuyết nữ quyền" },
+          { word: "male privilege", meaning: "đặc quyền của nam giới" },
+          { word: "female empowerment", meaning: "nâng cao quyền lực phụ nữ" },
+          { word: "gender mainstreaming", meaning: "lồng ghép giới" },
+          {
+            word: "sexual orientation equality",
+            meaning: "bình đẳng xu hướng tình dục",
+          },
+          { word: "gender equality index", meaning: "chỉ số bình đẳng giới" },
+          { word: "gender parity", meaning: "sự cân bằng giới tính" },
+          { word: "equality activism", meaning: "hoạt động vì bình đẳng" },
+          { word: "reproductive health", meaning: "sức khỏe sinh sản" },
+          { word: "gender diversity", meaning: "đa dạng giới tính" },
+        ],
+
+        unit7: [
+          { word: "organization", meaning: "tổ chức" },
+          { word: "international", meaning: "quốc tế" },
+          { word: "United Nations", meaning: "Liên Hợp Quốc" },
+          {
+            word: "World Health Organization",
+            meaning: "Tổ chức Y tế Thế giới",
+          },
+          { word: "UNICEF", meaning: "Quỹ Nhi đồng Liên Hợp Quốc" },
+          {
+            word: "World Trade Organization",
+            meaning: "Tổ chức Thương mại Thế giới",
+          },
+          { word: "ASEAN", meaning: "Hiệp hội các quốc gia Đông Nam Á" },
+          { word: "WTO", meaning: "Tổ chức Thương mại Thế giới" },
+          {
+            word: "UNESCO",
+            meaning: "Tổ chức Giáo dục, Khoa học và Văn hóa của Liên Hợp Quốc",
+          },
+          { word: "NGO", meaning: "Tổ chức phi chính phủ" },
+          { word: "economic cooperation", meaning: "hợp tác kinh tế" },
+          { word: "globalization", meaning: "toàn cầu hóa" },
+          { word: "sustainability", meaning: "tính bền vững" },
+          { word: "peacekeeping", meaning: "duy trì hòa bình" },
+          { word: "human rights", meaning: "quyền con người" },
+          { word: "charity", meaning: "từ thiện" },
+          { word: "development", meaning: "phát triển" },
+          { word: "aid", meaning: "viện trợ" },
+          { word: "social welfare", meaning: "phúc lợi xã hội" },
+          { word: "diplomacy", meaning: "ngoại giao" },
+          { word: "trade", meaning: "thương mại" },
+          { word: "economic growth", meaning: "tăng trưởng kinh tế" },
+          { word: "peace", meaning: "hòa bình" },
+          { word: "conflict", meaning: "xung đột" },
+          { word: "international relations", meaning: "quan hệ quốc tế" },
+          { word: "conference", meaning: "hội nghị" },
+          { word: "collaboration", meaning: "hợp tác" },
+          { word: "reform", meaning: "cải cách" },
+          { word: "negotiation", meaning: "đàm phán" },
+          { word: "global issues", meaning: "vấn đề toàn cầu" },
+          { word: "environmental protection", meaning: "bảo vệ môi trường" },
+          { word: "international law", meaning: "luật quốc tế" },
+          { word: "peace treaty", meaning: "hiệp ước hòa bình" },
+          { word: "international trade", meaning: "thương mại quốc tế" },
+          { word: "humanitarian aid", meaning: "viện trợ nhân đạo" },
+          { word: "refugees", meaning: "người tị nạn" },
+          { word: "multilateral", meaning: "đa phương" },
+          { word: "bilateral", meaning: "song phương" },
+          { word: "trade agreement", meaning: "hiệp định thương mại" },
+          { word: "global cooperation", meaning: "hợp tác toàn cầu" },
+          { word: "cultural exchange", meaning: "giao lưu văn hóa" },
+          { word: "economic development", meaning: "phát triển kinh tế" },
+          { word: "peaceful resolution", meaning: "giải quyết hòa bình" },
+          { word: "voting", meaning: "bỏ phiếu" },
+          { word: "security", meaning: "an ninh" },
+          { word: "humanitarian", meaning: "nhân đạo" },
+          { word: "cooperation", meaning: "hợp tác" },
+          { word: "intergovernmental", meaning: "giữa các chính phủ" },
+          { word: "disarmament", meaning: "giải trừ vũ khí" },
+          { word: "funding", meaning: "tài trợ" },
+          { word: "joint effort", meaning: "nỗ lực chung" },
+          { word: "United Nations (UN)", meaning: "Liên Hợp Quốc" },
+          { word: "ASEAN", meaning: "Hiệp hội các quốc gia Đông Nam Á" },
+          {
+            word: "World Health Organization (WHO)",
+            meaning: "Tổ chức Y tế Thế giới",
+          },
+          {
+            word: "World Trade Organization (WTO)",
+            meaning: "Tổ chức Thương mại Thế giới",
+          },
+          {
+            word: "Vietnamese foreign policy",
+            meaning: "chính sách đối ngoại của Việt Nam",
+          },
+          { word: "diplomacy", meaning: "ngoại giao" },
+          { word: "global cooperation", meaning: "hợp tác toàn cầu" },
+          { word: "peacekeeping", meaning: "giữ gìn hòa bình" },
+          { word: "human rights", meaning: "nhân quyền" },
+          { word: "development assistance", meaning: "hỗ trợ phát triển" },
+          { word: "UNICEF", meaning: "Quỹ Nhi đồng Liên Hợp Quốc" },
+          { word: "economic cooperation", meaning: "hợp tác kinh tế" },
+          {
+            word: "environmental sustainability",
+            meaning: "bền vững môi trường",
+          },
+          { word: "humanitarian aid", meaning: "viện trợ nhân đạo" },
+          { word: "NGOs", meaning: "tổ chức phi chính phủ" },
+          { word: "Vietnam's membership", meaning: "thành viên của Việt Nam" },
+          { word: "multilateral diplomacy", meaning: "ngoại giao đa phương" },
+          { word: "Vietnam War", meaning: "Chiến tranh Việt Nam" },
+          { word: "peace talks", meaning: "đàm phán hòa bình" },
+          { word: "global security", meaning: "an ninh toàn cầu" },
+          { word: "international relations", meaning: "quan hệ quốc tế" },
+          { word: "trade agreements", meaning: "hiệp định thương mại" },
+          { word: "international law", meaning: "luật quốc tế" },
+          {
+            word: "UN Security Council",
+            meaning: "Hội đồng Bảo an Liên Hợp Quốc",
+          },
+          { word: "regional organizations", meaning: "tổ chức khu vực" },
+          { word: "economic integration", meaning: "hội nhập kinh tế" },
+          { word: "regional cooperation", meaning: "hợp tác khu vực" },
+          { word: "trade partnerships", meaning: "đối tác thương mại" },
+          {
+            word: "UN General Assembly",
+            meaning: "Đại hội đồng Liên Hợp Quốc",
+          },
+          { word: "foreign investment", meaning: "đầu tư nước ngoài" },
+          { word: "humanitarian crisis", meaning: "khủng hoảng nhân đạo" },
+          { word: "peace negotiations", meaning: "đàm phán hòa bình" },
+          { word: "Vietnam's diplomacy", meaning: "ngoại giao của Việt Nam" },
+          { word: "conflict resolution", meaning: "giải quyết xung đột" },
+          {
+            word: "cross-border cooperation",
+            meaning: "hợp tác xuyên biên giới",
+          },
+          { word: "climate change", meaning: "biến đổi khí hậu" },
+          { word: "disarmament", meaning: "giải trừ quân bị" },
+          { word: "global governance", meaning: "quản trị toàn cầu" },
+          { word: "human rights violations", meaning: "vi phạm nhân quyền" },
+          { word: "development goals", meaning: "mục tiêu phát triển" },
+          { word: "South-South cooperation", meaning: "hợp tác Nam-Nam" },
+          { word: "peace-building", meaning: "xây dựng hòa bình" },
+          { word: "social development", meaning: "phát triển xã hội" },
+          { word: "multilateral organizations", meaning: "tổ chức đa phương" },
+          {
+            word: "UN peacekeepers",
+            meaning: "lực lượng gìn giữ hòa bình của Liên Hợp Quốc",
+          },
+          { word: "foreign aid", meaning: "hỗ trợ nước ngoài" },
+          {
+            word: "global health initiatives",
+            meaning: "sáng kiến y tế toàn cầu",
+          },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "regional security", meaning: "an ninh khu vực" },
+          { word: "trade liberalization", meaning: "tự do hóa thương mại" },
+          { word: "peace process", meaning: "quá trình hòa bình" },
+        ],
+        unit8: [
+          { word: "learning", meaning: "học" },
+          { word: "technology", meaning: "công nghệ" },
+          { word: "innovation", meaning: "sự đổi mới" },
+          { word: "online learning", meaning: "học trực tuyến" },
+          { word: "virtual classroom", meaning: "lớp học ảo" },
+          { word: "digital tools", meaning: "công cụ kỹ thuật số" },
+          { word: "e-learning", meaning: "học điện tử" },
+          { word: "distance learning", meaning: "học từ xa" },
+          { word: "interactive", meaning: "tính tương tác" },
+          { word: "e-books", meaning: "sách điện tử" },
+          { word: "multimedia", meaning: "đa phương tiện" },
+          { word: "mobile learning", meaning: "học qua điện thoại di động" },
+          { word: "apps", meaning: "ứng dụng" },
+          { word: "webinars", meaning: "hội thảo trực tuyến" },
+          { word: "podcasts", meaning: "chương trình âm thanh trực tuyến" },
+          { word: "cloud storage", meaning: "lưu trữ đám mây" },
+          { word: "online courses", meaning: "khóa học trực tuyến" },
+          { word: "virtual reality", meaning: "thực tế ảo" },
+          { word: "artificial intelligence", meaning: "trí tuệ nhân tạo" },
+          { word: "learning platforms", meaning: "nền tảng học tập" },
+          { word: "flipped classroom", meaning: "lớp học đảo ngược" },
+          { word: "gamification", meaning: "sự hóa trò chơi" },
+          { word: "collaboration", meaning: "sự hợp tác" },
+          { word: "peer learning", meaning: "học cùng bạn bè" },
+          { word: "adaptive learning", meaning: "học thích ứng" },
+          { word: "interactive quizzes", meaning: "câu đố tương tác" },
+          { word: "group discussion", meaning: "thảo luận nhóm" },
+          { word: "MOOC", meaning: "khóa học trực tuyến mở" },
+          { word: "flipped learning", meaning: "học đảo ngược" },
+          { word: "self-paced learning", meaning: "học theo tiến độ cá nhân" },
+          { word: "online assessment", meaning: "đánh giá trực tuyến" },
+          { word: "digital literacy", meaning: "kiến thức kỹ thuật số" },
+          { word: "virtual tours", meaning: "tour ảo" },
+          { word: "video lessons", meaning: "bài học qua video" },
+          { word: "forums", meaning: "diễn đàn" },
+          { word: "study apps", meaning: "ứng dụng học tập" },
+          { word: "search engines", meaning: "công cụ tìm kiếm" },
+          { word: "cyberlearning", meaning: "học trên mạng" },
+          { word: "social learning", meaning: "học xã hội" },
+          { word: "digital collaboration", meaning: "hợp tác kỹ thuật số" },
+          { word: "knowledge sharing", meaning: "chia sẻ kiến thức" },
+          { word: "virtual teamwork", meaning: "làm việc nhóm ảo" },
+          { word: "digital classrooms", meaning: "lớp học kỹ thuật số" },
+          {
+            word: "MOOC platforms",
+            meaning: "nền tảng khóa học trực tuyến mở",
+          },
+          { word: "digital education", meaning: "giáo dục kỹ thuật số" },
+          { word: "personalized learning", meaning: "học cá nhân hóa" },
+          { word: "feedback", meaning: "phản hồi" },
+          { word: "study groups", meaning: "nhóm học tập" },
+          { word: "educational games", meaning: "trò chơi giáo dục" },
+          { word: "virtual learning", meaning: "học trực tuyến" },
+          { word: "knowledge management", meaning: "quản lý tri thức" },
+          { word: "distance education", meaning: "giáo dục từ xa" },
+          { word: "e-learning", meaning: "học trực tuyến" },
+          { word: "online courses", meaning: "khóa học trực tuyến" },
+          { word: "digital literacy", meaning: "kỹ năng số" },
+          { word: "virtual classrooms", meaning: "lớp học ảo" },
+          { word: "interactive learning", meaning: "học tương tác" },
+          { word: "mobile learning", meaning: "học qua thiết bị di động" },
+          { word: "distance education", meaning: "giáo dục từ xa" },
+          { word: "blended learning", meaning: "học kết hợp" },
+          { word: "educational apps", meaning: "ứng dụng giáo dục" },
+          { word: "online resources", meaning: "tài nguyên trực tuyến" },
+          { word: "learning platforms", meaning: "nền tảng học tập" },
+          { word: "webinars", meaning: "hội thảo trực tuyến" },
+          {
+            word: "MOOCs (Massive Open Online Courses)",
+            meaning: "Khóa học trực tuyến đại trà",
+          },
+          { word: "gamification", meaning: "chơi hóa trong học tập" },
+          { word: "virtual reality (VR)", meaning: "thực tế ảo" },
+          { word: "augmented reality (AR)", meaning: "thực tế tăng cường" },
+          {
+            word: "artificial intelligence in education",
+            meaning: "trí tuệ nhân tạo trong giáo dục",
+          },
+          { word: "cloud computing", meaning: "điện toán đám mây" },
+          {
+            word: "learning management system (LMS)",
+            meaning: "hệ thống quản lý học tập",
+          },
+          {
+            word: "peer-to-peer learning",
+            meaning: "học tập qua tương tác đồng môn",
+          },
+          { word: "collaborative learning", meaning: "học tập hợp tác" },
+          { word: "digital textbooks", meaning: "sách giáo khoa điện tử" },
+          { word: "online assessments", meaning: "đánh giá trực tuyến" },
+          { word: "self-paced learning", meaning: "học theo tốc độ cá nhân" },
+          { word: "adaptive learning", meaning: "học thích ứng" },
+          { word: "microlearning", meaning: "học vi mô" },
+          { word: "virtual field trips", meaning: "chuyến tham quan ảo" },
+          { word: "digital classrooms", meaning: "lớp học số" },
+          { word: "online collaboration", meaning: "hợp tác trực tuyến" },
+          { word: "adaptive technology", meaning: "công nghệ thích ứng" },
+          { word: "learning analytics", meaning: "phân tích học tập" },
+          { word: "interactive whiteboards", meaning: "bảng trắng tương tác" },
+          { word: "coding skills", meaning: "kỹ năng lập trình" },
+          { word: "online communities", meaning: "cộng đồng trực tuyến" },
+          { word: "video tutorials", meaning: "hướng dẫn video" },
+          { word: "digital portfolios", meaning: "hồ sơ số" },
+          { word: "social learning", meaning: "học qua mạng xã hội" },
+          { word: "web-based learning", meaning: "học qua web" },
+          { word: "educational podcasts", meaning: "podcast giáo dục" },
+          {
+            word: "voice-activated learning",
+            meaning: "học điều khiển bằng giọng nói",
+          },
+          { word: "real-time feedback", meaning: "phản hồi thời gian thực" },
+          { word: "virtual mentoring", meaning: "hướng dẫn ảo" },
+          { word: "learning gamification", meaning: "học theo trò chơi" },
+          { word: "study apps", meaning: "ứng dụng học tập" },
+          { word: "e-books", meaning: "sách điện tử" },
+          { word: "peer review", meaning: "đánh giá đồng nghiệp" },
+          {
+            word: "online discussion forums",
+            meaning: "diễn đàn thảo luận trực tuyến",
+          },
+          { word: "flashcards", meaning: "thẻ ghi nhớ" },
+          {
+            word: "MOOC platforms",
+            meaning: "nền tảng MOOC (Khóa học trực tuyến đại trà)",
+          },
+          { word: "digital badges", meaning: "huy hiệu số" },
+          { word: "web quests", meaning: "tìm kiếm trên web" },
+          { word: "cloud-based learning", meaning: "học dựa trên đám mây" },
+        ],
+        unit9: [
+          { word: "environment", meaning: "môi trường" },
+          { word: "pollution", meaning: "ô nhiễm" },
+          { word: "sustainable", meaning: "bền vững" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "conservation", meaning: "bảo tồn" },
+          { word: "climate change", meaning: "biến đổi khí hậu" },
+          { word: "global warming", meaning: "nóng lên toàn cầu" },
+          { word: "carbon footprint", meaning: "dấu chân carbon" },
+          { word: "greenhouse gases", meaning: "khí nhà kính" },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          { word: "solar power", meaning: "năng lượng mặt trời" },
+          { word: "wind energy", meaning: "năng lượng gió" },
+          { word: "hydropower", meaning: "năng lượng thủy điện" },
+          { word: "eco-friendly", meaning: "thân thiện với môi trường" },
+          {
+            word: "environmentally conscious",
+            meaning: "ý thức bảo vệ môi trường",
+          },
+          { word: "deforestation", meaning: "nạn phá rừng" },
+          { word: "endangered species", meaning: "các loài nguy cấp" },
+          { word: "biodiversity", meaning: "sự đa dạng sinh học" },
+          { word: "water conservation", meaning: "bảo vệ tài nguyên nước" },
+          { word: "air quality", meaning: "chất lượng không khí" },
+          { word: "waste management", meaning: "quản lý chất thải" },
+          { word: "plastic waste", meaning: "rác thải nhựa" },
+          { word: "reusable", meaning: "có thể tái sử dụng" },
+          { word: "composting", meaning: "làm phân compost" },
+          { word: "carbon emissions", meaning: "lượng khí thải carbon" },
+          { word: "environmental impact", meaning: "tác động đến môi trường" },
+          { word: "ecosystem", meaning: "hệ sinh thái" },
+          { word: "pollutants", meaning: "chất ô nhiễm" },
+          { word: "plastic pollution", meaning: "ô nhiễm nhựa" },
+          { word: "green spaces", meaning: "khu vực xanh" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "eco-tourism", meaning: "du lịch sinh thái" },
+          { word: "zero waste", meaning: "không chất thải" },
+          { word: "alternative energy", meaning: "năng lượng thay thế" },
+          { word: "clean energy", meaning: "năng lượng sạch" },
+          { word: "carbon neutral", meaning: "trung hòa carbon" },
+          { word: "green technology", meaning: "công nghệ xanh" },
+          { word: "sustainable agriculture", meaning: "nông nghiệp bền vững" },
+          { word: "ocean pollution", meaning: "ô nhiễm đại dương" },
+          { word: "tree planting", meaning: "trồng cây" },
+          { word: "reduce", meaning: "giảm thiểu" },
+          { word: "reuse", meaning: "tái sử dụng" },
+          { word: "recycle", meaning: "tái chế" },
+          { word: "conserve", meaning: "bảo tồn" },
+          { word: "green energy", meaning: "năng lượng xanh" },
+          { word: "climate action", meaning: "hành động vì khí hậu" },
+          {
+            word: "environmental awareness",
+            meaning: "nhận thức về môi trường",
+          },
+          { word: "sustainable practices", meaning: "thực hành bền vững" },
+          { word: "environmental protection", meaning: "bảo vệ môi trường" },
+          { word: "pollution control", meaning: "kiểm soát ô nhiễm" },
+          { word: "environmental policy", meaning: "chính sách môi trường" },
+          { word: "natural resources", meaning: "tài nguyên thiên nhiên" },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          { word: "recycling", meaning: "tái chế" },
+          { word: "climate change", meaning: "biến đổi khí hậu" },
+          { word: "global warming", meaning: "nóng lên toàn cầu" },
+          { word: "carbon footprint", meaning: "dấu vết carbon" },
+          { word: "pollution", meaning: "ô nhiễm" },
+          { word: "greenhouse gases", meaning: "khí nhà kính" },
+          { word: "deforestation", meaning: "phá rừng" },
+          {
+            word: "wildlife conservation",
+            meaning: "bảo tồn động vật hoang dã",
+          },
+          { word: "biodiversity", meaning: "đa dạng sinh học" },
+          { word: "ecosystem", meaning: "hệ sinh thái" },
+          { word: "environmental impact", meaning: "tác động môi trường" },
+          { word: "eco-friendly", meaning: "thân thiện với môi trường" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "carbon emissions", meaning: "khí thải carbon" },
+          { word: "green technology", meaning: "công nghệ xanh" },
+          { word: "climate action", meaning: "hành động vì khí hậu" },
+          { word: "environmental protection", meaning: "bảo vệ môi trường" },
+          { word: "clean energy", meaning: "năng lượng sạch" },
+          { word: "waste management", meaning: "quản lý chất thải" },
+          { word: "plastic pollution", meaning: "ô nhiễm nhựa" },
+          { word: "alternative energy", meaning: "năng lượng thay thế" },
+          { word: "greenhouse effect", meaning: "hiệu ứng nhà kính" },
+          { word: "zero waste", meaning: "không rác thải" },
+          { word: "ocean conservation", meaning: "bảo tồn đại dương" },
+          { word: "clean water", meaning: "nước sạch" },
+          { word: "carbon neutrality", meaning: "trung hòa carbon" },
+          { word: "ecotourism", meaning: "du lịch sinh thái" },
+          {
+            word: "environmentally-friendly products",
+            meaning: "sản phẩm thân thiện với môi trường",
+          },
+          { word: "natural resources", meaning: "tài nguyên thiên nhiên" },
+          { word: "landfill", meaning: "bãi rác" },
+          { word: "habitat destruction", meaning: "hủy hoại môi trường sống" },
+          { word: "conservation efforts", meaning: "nỗ lực bảo tồn" },
+          { word: "sustainable agriculture", meaning: "nông nghiệp bền vững" },
+          {
+            word: "eco-friendly transportation",
+            meaning: "giao thông thân thiện với môi trường",
+          },
+          { word: "forest restoration", meaning: "phục hồi rừng" },
+          { word: "environmental footprint", meaning: "dấu chân môi trường" },
+          { word: "organic farming", meaning: "nông nghiệp hữu cơ" },
+          { word: "green building", meaning: "xây dựng xanh" },
+          { word: "plastic recycling", meaning: "tái chế nhựa" },
+          { word: "alternative fuel", meaning: "nhiên liệu thay thế" },
+          {
+            word: "rainforest preservation",
+            meaning: "bảo tồn rừng mưa nhiệt đới",
+          },
+          { word: "environmental policy", meaning: "chính sách môi trường" },
+          { word: "solar panels", meaning: "tấm pin mặt trời" },
+          { word: "wind turbines", meaning: "tuabin gió" },
+          {
+            word: "climate change adaptation",
+            meaning: "thích nghi với biến đổi khí hậu",
+          },
+          {
+            word: "greenwashing",
+            meaning:
+              "một chiến lược marketing sai lầm khi quảng bá một sản phẩm như thân thiện với môi trường",
+          },
+          { word: "reforestation", meaning: "tái trồng rừng" },
+          { word: "sustainable cities", meaning: "thành phố bền vững" },
+        ],
+        unit10: [
+          { word: "ecotourism", meaning: "du lịch sinh thái" },
+          { word: "sustainable tourism", meaning: "du lịch bền vững" },
+          { word: "conservation", meaning: "bảo tồn" },
+          { word: "biodiversity", meaning: "sự đa dạng sinh học" },
+          { word: "natural resources", meaning: "tài nguyên thiên nhiên" },
+          { word: "wildlife", meaning: "động vật hoang dã" },
+          { word: "environmental impact", meaning: "tác động môi trường" },
+          { word: "local culture", meaning: "văn hóa địa phương" },
+          { word: "ecological balance", meaning: "cân bằng sinh thái" },
+          { word: "preservation", meaning: "sự bảo tồn" },
+          { word: "ecotourist", meaning: "khách du lịch sinh thái" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          {
+            word: "community involvement",
+            meaning: "sự tham gia của cộng đồng",
+          },
+          { word: "green tourism", meaning: "du lịch xanh" },
+          { word: "carbon footprint", meaning: "dấu chân carbon" },
+          { word: "conservation area", meaning: "khu bảo tồn" },
+          { word: "natural habitat", meaning: "môi trường sống tự nhiên" },
+          { word: "eco-friendly", meaning: "thân thiện với môi trường" },
+          { word: "environmental education", meaning: "giáo dục môi trường" },
+          { word: "cultural heritage", meaning: "di sản văn hóa" },
+          { word: "responsible travel", meaning: "du lịch có trách nhiệm" },
+          { word: "green certification", meaning: "chứng nhận xanh" },
+          { word: "low-impact tourism", meaning: "du lịch ít ảnh hưởng" },
+          {
+            word: "environmental awareness",
+            meaning: "nhận thức về môi trường",
+          },
+          {
+            word: "ecotourism activities",
+            meaning: "hoạt động du lịch sinh thái",
+          },
+          { word: "protected area", meaning: "khu vực bảo vệ" },
+          { word: "local economy", meaning: "nền kinh tế địa phương" },
+          { word: "sustainable practices", meaning: "thực hành bền vững" },
+          { word: "ecological tourism", meaning: "du lịch sinh thái học" },
+          { word: "wildlife protection", meaning: "bảo vệ động vật hoang dã" },
+          { word: "cultural preservation", meaning: "bảo tồn văn hóa" },
+          { word: "green initiatives", meaning: "sáng kiến xanh" },
+          { word: "ecological footprint", meaning: "dấu chân sinh thái" },
+          {
+            word: "sustainable tourism industry",
+            meaning: "ngành công nghiệp du lịch bền vững",
+          },
+          { word: "local communities", meaning: "cộng đồng địa phương" },
+          {
+            word: "environmentally friendly",
+            meaning: "thân thiện với môi trường",
+          },
+          { word: "conservation efforts", meaning: "nỗ lực bảo tồn" },
+          { word: "green space", meaning: "khu vực xanh" },
+          {
+            word: "wildlife sanctuary",
+            meaning: "khu bảo tồn động vật hoang dã",
+          },
+          {
+            word: "sustainable tourism practices",
+            meaning: "thực hành du lịch bền vững",
+          },
+          {
+            word: "ecotourism destinations",
+            meaning: "địa điểm du lịch sinh thái",
+          },
+          {
+            word: "ecotourism policies",
+            meaning: "chính sách du lịch sinh thái",
+          },
+          { word: "local traditions", meaning: "truyền thống địa phương" },
+          { word: "environmental conservation", meaning: "bảo tồn môi trường" },
+          {
+            word: "eco-tourism certification",
+            meaning: "chứng nhận du lịch sinh thái",
+          },
+          {
+            word: "green tourism practices",
+            meaning: "thực hành du lịch xanh",
+          },
+          { word: "natural preservation", meaning: "bảo tồn thiên nhiên" },
+          { word: "sustainable resources", meaning: "tài nguyên bền vững" },
+          { word: "eco-conscious", meaning: "ý thức về môi trường" },
+          { word: "community-based tourism", meaning: "du lịch cộng đồng" },
+          { word: "ecotourism", meaning: "du lịch sinh thái" },
+          { word: "sustainable tourism", meaning: "du lịch bền vững" },
+          {
+            word: "environmentally-friendly",
+            meaning: "thân thiện với môi trường",
+          },
+          { word: "cultural heritage", meaning: "di sản văn hóa" },
+          { word: "wildlife", meaning: "động vật hoang dã" },
+          { word: "conservation", meaning: "bảo tồn" },
+          { word: "nature reserve", meaning: "khu bảo tồn thiên nhiên" },
+          { word: "eco-lodges", meaning: "nhà nghỉ sinh thái" },
+          { word: "green tourism", meaning: "du lịch xanh" },
+          { word: "sustainable practices", meaning: "thực hành bền vững" },
+          { word: "carbon footprint", meaning: "dấu vết carbon" },
+          { word: "local communities", meaning: "cộng đồng địa phương" },
+          { word: "ecological impact", meaning: "tác động sinh thái" },
+          {
+            word: "environmental awareness",
+            meaning: "nhận thức về môi trường",
+          },
+          {
+            word: "ecotourism activities",
+            meaning: "hoạt động du lịch sinh thái",
+          },
+          { word: "cultural exchange", meaning: "trao đổi văn hóa" },
+          { word: "responsible travel", meaning: "du lịch có trách nhiệm" },
+          {
+            word: "eco-friendly transportation",
+            meaning: "giao thông thân thiện với môi trường",
+          },
+          { word: "local produce", meaning: "sản phẩm địa phương" },
+          { word: "community-based tourism", meaning: "du lịch cộng đồng" },
+          { word: "protected areas", meaning: "khu vực bảo vệ" },
+          { word: "sustainable development", meaning: "phát triển bền vững" },
+          { word: "nature trails", meaning: "đường mòn tự nhiên" },
+          { word: "ecological balance", meaning: "cân bằng sinh thái" },
+          {
+            word: "wildlife conservation",
+            meaning: "bảo tồn động vật hoang dã",
+          },
+          { word: "green certification", meaning: "chứng nhận xanh" },
+          { word: "eco-conscious", meaning: "nhận thức về môi trường" },
+          { word: "green certification", meaning: "chứng nhận xanh" },
+          { word: "low-impact travel", meaning: "du lịch ít tác động" },
+          { word: "ecological footprint", meaning: "dấu vết sinh thái" },
+          { word: "eco-tourist", meaning: "khách du lịch sinh thái" },
+          { word: "conservation efforts", meaning: "nỗ lực bảo tồn" },
+          {
+            word: "wildlife sanctuary",
+            meaning: "khu bảo tồn động vật hoang dã",
+          },
+          { word: "carbon-neutral", meaning: "trung hòa carbon" },
+          {
+            word: "sustainable tourism practices",
+            meaning: "thực hành du lịch bền vững",
+          },
+          { word: "green hotels", meaning: "khách sạn xanh" },
+          {
+            word: "biodegradable products",
+            meaning: "sản phẩm phân hủy sinh học",
+          },
+          { word: "heritage sites", meaning: "di tích lịch sử" },
+          { word: "cultural immersion", meaning: "hòa nhập văn hóa" },
+          {
+            word: "eco-friendly accommodations",
+            meaning: "chỗ ở thân thiện với môi trường",
+          },
+          {
+            word: "wildlife observation",
+            meaning: "quan sát động vật hoang dã",
+          },
+          {
+            word: "environmental impact assessment",
+            meaning: "đánh giá tác động môi trường",
+          },
+          {
+            word: "greenwashing",
+            meaning:
+              "hành vi quảng bá sai lệch về tính thân thiện với môi trường",
+          },
+          { word: "renewable energy", meaning: "năng lượng tái tạo" },
+          {
+            word: "sustainable infrastructure",
+            meaning: "cơ sở hạ tầng bền vững",
+          },
+          { word: "nature conservation", meaning: "bảo tồn thiên nhiên" },
+          {
+            word: "eco-friendly packaging",
+            meaning: "bao bì thân thiện với môi trường",
+          },
+          { word: "recycling programs", meaning: "chương trình tái chế" },
+          { word: "organic food", meaning: "thực phẩm hữu cơ" },
+          {
+            word: "environmental sustainability",
+            meaning: "tính bền vững môi trường",
+          },
+          {
+            word: "ecotourism certification",
+            meaning: "chứng nhận du lịch sinh thái",
+          },
+        ],
+      };
+
+      let currentWordIndex = 0;
+      let selectedUnit;
+      let timer;
+      let timeRemaining = 30;
+      let gameInterval;
+      let completedWords = []; // Lưu lại các từ đã chơi
+      let correctAnswers = 0; // Lưu số câu đúng
+
+      document
+        .getElementById("startButton")
+        .addEventListener("click", function () {
+          selectedUnit = document.getElementById("unit").value;
+          currentWordIndex = 0;
+          completedWords = []; // Reset completed words mỗi khi bắt đầu lại
+          correctAnswers = 0; // Reset số câu đúng
+          document.getElementById("startButton").style.display = "none";
+          document.getElementById("nextButton").style.display = "inline-block";
+          document.getElementById("resultContainer").innerHTML = "";
+          startGame();
+        });
+
+      document
+        .getElementById("nextButton")
+        .addEventListener("click", function () {
+          const userInput = document
+            .getElementById("wordInput")
+            .value.trim()
+            .toLowerCase();
+          const correctWord =
+            vocabulary[selectedUnit][currentWordIndex].word.toLowerCase();
+
+          // Extract the missing part of the word
+          const missingPart = correctWord.slice(-userInput.length);
+
+          // Kiểm tra câu trả lời
+          if (userInput === missingPart) {
+            document.getElementById(
+              "resultContainer"
+            ).innerHTML = `<span class="result">Correct!</span>`;
+            correctAnswers++; // Tăng số câu đúng
+          } else {
+            document.getElementById(
+              "resultContainer"
+            ).innerHTML = `<span class="incorrect">Incorrect. The correct word is: ${correctWord}</span>`;
+          }
+
+          // Lưu từ và nghĩa vào completedWords
+          completedWords.push({
+            word: correctWord,
+            meaning: vocabulary[selectedUnit][currentWordIndex].meaning,
+          });
+
+          currentWordIndex++;
+
+          if (
+            currentWordIndex < vocabulary[selectedUnit].length &&
+            currentWordIndex < 10
+          ) {
+            setTimeout(() => {
+              document.getElementById("wordInput").value = ""; // Clear input field
+              document.getElementById("resultContainer").innerHTML = "";
+              showWord();
+              startTimer();
+            }, 5000); // Wait for 5 seconds before showing the next word
+          } else {
+            clearInterval(timer); // Dừng timer khi hoàn thành 10 câu
+            setTimeout(() => {
+              showCompletionSummary(); // Hiển thị kết quả tổng kết
+            }, 5000);
+          }
+        });
+
+      function startGame() {
+        // Shuffle the words and select the first 10 words
+        let words = vocabulary[selectedUnit];
+        words = shuffleArray(words);
+        words = words.slice(0, 10); // Get 10 words
+
+        vocabulary[selectedUnit] = words;
+        showWord();
+        startTimer();
+      }
+
+      function showWord() {
+        const word = vocabulary[selectedUnit][currentWordIndex].word;
+        const wordLength = word.length;
+        const revealLength = Math.floor(wordLength * 0.4); // Hiển thị 40% số chữ
+        let revealedIndexes = new Set(); // Dùng để theo dõi các chỉ số đã được chọn ngẫu nhiên
+
+        // Chọn ngẫu nhiên các chỉ số để hiển thị 40% chữ
+        while (revealedIndexes.size < revealLength) {
+          const randomIndex = Math.floor(Math.random() * wordLength);
+          revealedIndexes.add(randomIndex);
+        }
+
+        let hint = "";
+        // Tạo gợi ý với các ký tự được chọn ngẫu nhiên
+        for (let i = 0; i < wordLength; i++) {
+          if (revealedIndexes.has(i)) {
+            hint += word[i]; // Hiển thị ký tự thật
+          } else {
+            hint += "_"; // Thay phần còn lại bằng dấu gạch dưới
+          }
+        }
+
+        document.getElementById("wordContainer").innerHTML = hint;
+        document.getElementById(
+          "hintContainer"
+        ).innerHTML = `Meaning: ${vocabulary[selectedUnit][currentWordIndex].meaning}`;
+      }
+
+      function showCompletionSummary() {
+        // Hiển thị tổng kết kết quả
+        let summaryHTML = `<h3>You answered ${correctAnswers} out of 10 correctly!</h3>`;
+        summaryHTML += "<h3>Review Your Words</h3><ul>";
+        completedWords.forEach((item) => {
+          summaryHTML += `<li><strong>${item.word}</strong>: ${item.meaning}</li>`;
+        });
+        summaryHTML += "</ul>";
+        summaryHTML += '<a href="#" id="restartButton">Start Over</a>';
+
+        document.getElementById("resultContainer").innerHTML = summaryHTML;
+
+        // Thêm sự kiện cho nút "Start Over"
+        document
+          .getElementById("restartButton")
+          .addEventListener("click", function () {
+            resetGame(); // Quay lại màn hình ban đầu
+          });
+      }
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function startTimer() {
+        timeRemaining = 30;
+        document.getElementById(
+          "timerContainer"
+        ).innerHTML = `Time remaining: ${timeRemaining}s`;
+        clearInterval(timer);
+        timer = setInterval(() => {
+          timeRemaining--;
+          document.getElementById(
+            "timerContainer"
+          ).innerHTML = `Time remaining: ${timeRemaining}s`;
+          if (timeRemaining === 0) {
+            clearInterval(timer);
+            document.getElementById("nextButton").click(); // Auto click "Next Word" when time runs out
+          }
+        }, 1000);
+      }
+
+      function resetGame() {
+        document.getElementById("startButton").style.display = "inline-block";
+        document.getElementById("nextButton").style.display = "none";
+        document.getElementById("wordInput").value = "";
+        document.getElementById("resultContainer").innerHTML = "";
+        document.getElementById("wordContainer").innerHTML = "";
+        document.getElementById("hintContainer").innerHTML = "";
+        completedWords = []; // Reset the completed words array
+        correctAnswers = 0; // Reset số câu đúng
+      }
+    </script>
+  </body>
+</html>

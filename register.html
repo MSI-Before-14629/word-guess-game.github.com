@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #ff6b81, #f4a261);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        font-size: 50px;
+        background: linear-gradient(90deg, #ff3c50, #d63a45, #b55639, #000000);
+        -webkit-background-clip: text;
+        color: transparent;
+        margin-bottom: 30px;
+        font-weight: 700;
+        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.4);
+        letter-spacing: 1px;
+        line-height: 1.2;
+      }
+
+      .register-container {
+        background: rgba(33, 33, 33, 0.9);
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        width: 300px;
+        text-align: center;
+        margin: 20px auto;
+      }
+
+      .register-container h2 {
+        color: #ff6b81;
+        margin-bottom: 15px;
+        font-size: 24px;
+      }
+
+      .register-container label {
+        display: block;
+        margin: 10px 0 5px;
+        font-size: 16px;
+        color: white;
+      }
+
+      .register-container input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+      }
+
+      .register-container input:focus {
+        outline: none;
+        border-color: #ff6b81;
+      }
+
+      .register-container button {
+        background: #ff6b81;
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .register-container button:hover {
+        background: #d63a45;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Word Guess Game</h1>
+    <div class="register-container">
+      <h2>Register</h2>
+      <form id="registerForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+        <button type="button" onclick="register()">Register</button>
+      </form>
+    </div>
+
+    <script>
+      // Hàm đăng ký
+      function register() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Lưu thông tin vào localStorage
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
+
+        // Chuyển hướng sang trang đăng nhập
+        window.location.href = "login.html";
+      }
+    </script>
+  </body>
+</html>
