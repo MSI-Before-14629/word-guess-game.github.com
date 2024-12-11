@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Word Guess Game</title>
+    <title>WordVibe</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
       rel="stylesheet"
@@ -11,12 +11,8 @@
     <style>
       body {
         font-family: "Poppins", sans-serif;
-        background: linear-gradient(
-          135deg,
-          #ff6b81,
-          #f4a261
-        ); /* Gradient màu sắc tươi sáng nhưng không quá chói */
-        color: white;
+        background: linear-gradient(135deg, #a8edea, #fed6e3);
+        color: #333;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -27,20 +23,14 @@
       }
 
       h1 {
-        font-size: 50px;
-        background: linear-gradient(
-          90deg,
-  #ff3c50, /* Tông đậm hơn của #ff6b81 */
-  #d63a45, /* Tông đậm hơn của #f85a61 */
-  #b55639, /* Tông đậm hơn của #f4a261 */
-  #000000 
-        ); /* Gradient sáng và ấn tượng cho tiêu đề */
+        font-size: 48px;
+        background: linear-gradient(90deg, #3b82f6, #9333ea, #14b8a6);
         -webkit-background-clip: text;
         color: transparent;
         margin-bottom: 30px;
         font-weight: 700;
-        text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.4); /* Bóng đổ rõ ràng để tiêu đề nổi bật */
-        letter-spacing: 1px;
+        text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+        letter-spacing: 1.2px;
         line-height: 1.2;
       }
 
@@ -50,113 +40,147 @@
         font-size: 18px;
         margin: 15px;
         border-radius: 8px;
-        border: 2px solid #f85a61;
-        background: linear-gradient(
-           135deg,
-  #ff3c50 20%, /* Tông đậm hơn của #ff6b81 */
-  #b55639 40%, /* Tông đậm hơn của #f4a261 */
-  #2b2b2b 60%, /* Tông gần đen, giúp chuyển đổi mượt mà */
-  #000000 100% 
-        ); /* Gradient nhẹ nhưng nổi bật cho nền */
+        border: none;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
         color: white;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      select {
+        background-color: #fff;
+        color: #333;
+      }
+
+      select option {
+        color: #333;
+        background-color: #fff;
+      }
+
+      select:hover,
+      button:hover {
+        background: linear-gradient(135deg, #2575fc, #6a11cb);
+        transform: translateY(-3px);
       }
 
       select:focus,
       button:focus {
         outline: none;
-        border-color: #ff6b81;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      }
-
-      select:hover,
-      button:hover {
-        background-color: #ff6b81;
-        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
       .game-container {
-        width: 70%;
-        max-width: 650px;
+        width: 80%;
+        max-width: 700px;
         text-align: center;
-        background: rgba(33, 33, 33, 0.8); /* Nền tối nhưng bán trong suốt */
+        background: rgba(255, 255, 255, 0.9);
         padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         backdrop-filter: blur(10px);
       }
 
       .word-container {
-        font-size: 30px;
+        font-size: 32px;
         font-weight: 600;
         margin: 20px 0;
-        color: #f4a261; /* Màu sáng, ấm áp cho chữ */
-        text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
+        color: #333;
+        text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.2);
       }
 
-      .underline {
-        font-size: 36px;
-        letter-spacing: 3px;
-        display: inline-block;
-        width: 50px;
-        height: 40px;
-        margin: 5px;
-        border-bottom: 2px solid #ff6b81; /* Sử dụng màu gradient chủ đạo */
+      .word-input {
+        width: 300px;
+        font-size: 20px;
+        padding: 10px;
         text-align: center;
-        line-height: 40px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        margin: 10px 0;
+        background-color: #f8f8f8;
+        color: #333;
+        transition: all 0.3s ease;
+      }
+
+      .word-input:focus {
+        border-color: #6a11cb;
+        outline: none;
+        transform: translateY(-3px);
       }
 
       .hint {
         font-style: italic;
         font-size: 18px;
         margin-top: 10px;
-        color: #bbb;
-      }
-
-      .word-input {
-        width: 250px;
-        font-size: 24px;
-        padding: 15px;
-        text-align: center;
-        border: 2px solid #444;
-        border-radius: 8px;
-        margin: 10px 0;
-        background-color: #333;
-        color: white;
-        transition: all 0.3s ease;
-      }
-
-      .word-input:focus {
-        border-color: #ff6b81;
-        outline: none;
-        transform: translateY(-3px);
-      }
-
-      .button-container {
-        margin-top: 30px;
+        color: #666;
       }
 
       .timer {
         font-size: 22px;
-        color: #ff6b81; /* Màu đỏ hồng nổi bật cho đồng hồ */
+        color: #2575fc;
         font-weight: bold;
         text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
       }
 
       .result {
         font-size: 20px;
-        color: #66bb6a; /* Màu xanh lá cho kết quả đúng */
+        color: #28a745;
         font-weight: bold;
         margin-top: 20px;
       }
 
       .incorrect {
         font-size: 20px;
-        color: #ff6b81; /* Màu đỏ cho kết quả sai */
+        color: #ff3c50;
         font-weight: bold;
         margin-top: 20px;
+      }
+
+      .summary {
+        font-size: 18px;
+        background: linear-gradient(135deg, #2575fc, #6a11cb);
+        color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: left;
+        margin-top: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .summary h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .summary ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .summary ul li {
+        margin: 10px 0;
+      }
+
+      .summary ul li strong {
+        font-weight: 600;
+        color: #ff6b81;
+      }
+
+      .summary a {
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .summary a:hover {
+        background: linear-gradient(135deg, #2575fc, #6a11cb);
+        transform: translateY(-3px);
       }
 
       @media (max-width: 768px) {
@@ -172,23 +196,31 @@
         select,
         button {
           font-size: 16px;
-          padding: px 20px;
+          padding: 10px 20px;
         }
 
         .word-input {
-          width: 220px;
-          font-size: 22px;
+          width: 250px;
+          font-size: 18px;
+        }
+
+        .summary {
+          font-size: 16px;
+        }
+
+        .summary h3 {
+          font-size: 20px;
         }
       }
     </style>
   </head>
   <body>
-    <h1>Word Guess Game</h1>
+    <h1>WordVibe</h1>
     <select id="unit">
       <option value="unit1">Unit 1: Family Life</option>
       <option value="unit2">Unit 2: Humans and the environment</option>
       <option value="unit3">Unit 3: Music</option>
-      <option value="unit4">Unit 4: For a Better Community</option>
+      <option value="unit4">For a Better Community</option>
       <option value="unit5">Unit 5: Inventions</option>
       <option value="unit6">Unit 6: Gender Equality</option>
       <option value="unit7">
@@ -215,7 +247,6 @@
         <button id="nextButton" style="display: none">Next Word</button>
       </div>
     </div>
-
     <script>
       const vocabulary = {
         unit1: [
